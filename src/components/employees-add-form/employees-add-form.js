@@ -7,45 +7,54 @@ class EmployeesAddForm extends Component {
         super(props);
         this.state = {
             name: '',
-            salary: '',
-            errors: []
+            salary: 100,
+            errors: {},
+            exceptions: false
         }
     }
 
-    validateForm = () => {
-        const {name, salary} = this.state,
-            errorNameMessage = 'Name length must be greater then 3 characters',
-            errorSalaryMessage = 'Amount of salary must be greater than 100$',
-            newErrors = [];
-        if(name < 3) newErrors.push({name: errorNameMessage});
-        if(Number.parseInt(salary) < 100) newErrors.push({salary: errorSalaryMessage});
-        this.setState({
-            errors: newErrors
+    validateForm = ()=>{
+
+        const errorNameMessage = 'Name must be greater than 3 characters',
+              errorSalaryMessage = 'Salary must be greater than 100$';
+
+        this.setState(({name, salary, errors})=>{
+            const newError = {...errors};
+
+            (name.length < 3) ? newError.name = errorNameMessage : delete newError.name;
+            (salary.length < 3) ? newError.salary = errorSalaryMessage : delete newError.salary;
+
+            return {
+                errors : newError,
+                exceptions: !Object.keys(newError).length
+            }
+
         });
     }
 
     onValueChange = (e) => {
-        this.validateForm();
         this.setState({
             [e.target.name]: e.target.value
         });
+        this.validateForm();
     }
 
     onSubmitForm = (e) => {
         e.preventDefault();
         const {addItem} = this.props,
-            {name, salary, errors} = this.state;
-        if (errors.length === 0) {
+            {name, salary, exceptions, errors} = this.state;
+        this.validateForm()
+        if (Object.keys(errors).length === 0 && exceptions) {
             addItem({name: name, salary: salary});
             this.setState({
                 name: '',
-                salary: ''
+                salary: 100,
+                exceptions: false
             });
         }
     }
 
     render() {
-
         const {name, salary, errors} = this.state;
 
         return (
@@ -62,7 +71,7 @@ class EmployeesAddForm extends Component {
                                value={name}
                                onChange={this.onValueChange}
                         />
-                        <p className={"message-text error" + (errors ? " visible" : "")}></p>
+                        {errors.name && <p className="message-text error visible">{errors.name}</p>}
                     </div>
                     <div className="form-wrap">
                         <input type="number"
@@ -72,7 +81,7 @@ class EmployeesAddForm extends Component {
                                value={salary}
                                onChange={this.onValueChange}
                         />
-                        <p className={"message-text error" + (errors ? " visible" : "")}>n</p>
+                        {errors.salary && <p className="message-text error visible">{errors.salary}</p>}
                     </div>
 
                     <button type="submit"

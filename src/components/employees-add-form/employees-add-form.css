@@ -36,6 +36,10 @@
     color: #e5383b;
 }
 
+.info{
+    color: #ffffff;
+}
+
 .message-text.visible{
     display: block;
 }
